@@ -4,9 +4,8 @@ class RetrievingFiles:
         pass
 
     def content_in_binary_form(self, meta_record):
-        data = json.loads(meta_record)
-        path = data['path']['absolute_path']
-        neam = data['metadata']['name']
+        path = meta_record['path']['absolute_path']
+        neam = meta_record['metadata']['name']
         try:
             with open(path, 'rb') as f:
                 binary_data = f.read()
