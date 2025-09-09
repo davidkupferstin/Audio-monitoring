@@ -1,0 +1,17 @@
+{
+  "mappings": {
+    "properties": {
+      "metadata": {
+        "type": "nested",
+        "properties": {
+          "name": { "type": "text" },
+          "size": { "type": "integer" },
+          "human_readable_size": { "type": "text" },
+          "Creation_time": { "format": "yyyy-MM-dd HH:mm:ss", "type": "date" },
+          "last_modified": { "format": "yyyy-MM-dd HH:mm:ss.000000", "type": "date" }
+        }
+      },
+      "id": { "type": "keyword" }
+    }
+  }
+}

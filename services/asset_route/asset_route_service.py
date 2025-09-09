@@ -4,8 +4,10 @@ from services.asset_route.retrieving_files import RetrievingFiles
 from services.asset_route.unique_id_generator import UniqueIDGenerator
 from shared.kafka.consumer import get_consumer
 from shared.db.connector import MongoDBConnection
-from shared.elastic.connection import Connection, DocumentsIndex
+from shared.elastic.connection import Connection, Index
 from services.asset_route.dal import PersisterDAL
+from shared.kafka.producer import send_messages
+
 
 from dotenv import load_dotenv
 
@@ -17,17 +19,24 @@ class AssetRouteService:
         self.retrieving_files = RetrievingFiles()
         self.mongo_uri = os.getenv("MONGO_URI")
         self.db_name = os.getenv("DB_NAME")
-        self.elastic_client = Connection()
+        Connection()
+        self.es = Connection().es
+        self.es_index = os.getenv("ES_INDEX")
+        with open('index_mapping.json', 'r') as f:
+            ES_INDEX_MAPPING = json.load(f)
+        self.os_index_mapping = ES_INDEX_MAPPING
+        Index(self.es_index, self.os_index_mapping)
         self.consumer = get_consumer('podcast_file_metadata')
 
 
     def preparing_the_data_parts(self, meta_record):
-        id = self.unique_id_generator.generates_id_from_metadata(meta_record)
-        file = self.retrieving_files.content_in_binary_form(meta_record)
+        id = self.unique_id_generator.generates_id_from_metadata(meta_record['metadata'])
+        file = self.retrieving_files.content_in_binary_form(meta_record['path']['absolute_path'])
+        metadata = meta_record['metadata']
 
-        return id , file
+        return id , file, metadata
 
-    def persist(self, db, data):
+    def mongo_persist(self, db, data):
         collection = db['podcast_files']
         if collection is not None:
             PersisterDAL.insert_document(collection, data)
@@ -40,13 +49,15 @@ class AssetRouteService:
                 for record in self.consumer:
                     meta_record = record.value
                     data = json.loads(meta_record)
-                    id, file = self.preparing_the_data_parts(data)
-                    DocumentsIndex("podcast_file_metadata", id, data["metadata"])
-                    data = {"_id" : id , "file" : file}
-                    self.persist(db, data)
-
-
-
+                    id, file, metadata = self.preparing_the_data_parts(data)
+                    data = {"unique_id" : id , "file" : file}
+                    try:
+                        self.mongo_persist(db, data)
+                        send_messages('podcast_file_to_mongo_id', [id])
+                    except Exception as a:
+                        return a
+                    response = self.es.index(index=self.es_index, id=id, document=metadata)
+                    # print(response)
         except KeyboardInterrupt:
             print("Shutting down AssetRouteService...")
         finally:
