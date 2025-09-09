@@ -3,7 +3,6 @@ from services.meta_flow.extracting_file_metadata import ExtractingFileMetadata
 from shared.kafka.producer import send_messages
 
 
-# from shared.kafka.producer import send_messages
 
 class MetaFlowService:
     def __init__(self):
