@@ -6,3 +6,9 @@ class MongoDAL:
         collection = self.db[collection_name]
         cursor = collection.find({}).sort([("createdate", 1), ("_id", 1)]).skip(skip).limit(limit)
         return list(cursor)
+
+    def fetch_document(self, collection_name , value):
+        collection = self.db[collection_name]
+        result = collection.find_one({"unique_id": value})
+        return result
+

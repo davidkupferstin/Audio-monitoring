@@ -30,3 +30,7 @@ class MongoManager:
             self.skip += len(batch)
             self._save_skip(self.skip)
         return batch
+
+    def document(self, value):
+
+        document = self.dal.fetch_document(self.collection_name , value)
