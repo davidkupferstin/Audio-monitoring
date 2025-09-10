@@ -11,6 +11,7 @@ load_dotenv()
 
 class ClassificationService:
     def __init__(self):
+        self.logger = Logger.get_logger()
         self.podcast_classification = PodcastClassification()
         Connection()
         self.es = Connection().es
@@ -28,17 +29,17 @@ class ClassificationService:
                         if "field_name" in document_source:
                             file_transcript = document_source["field_name"]
                             classi_dict = self.podcast_classification.classification(file_transcript)
-                        print(f"Document found: {document_source}")
+                        self.logger.info(f"Document found: {document_source}")
                     else:
-                        print(f"Document with ID '{id}' not found in index '{self.es_index}'.")
+                        self.logger.error(f"Document with ID '{id}' not found in index '{self.es_index}'.")
                 except Exception as e:
-                    print(f"Error retrieving document: {e}")
+                    self.logger.error(f"Error retrieving document: {e}")
 
                 try:
                     response = self.es.update(index=self.es_index, id=id, body=classi_dict)
-                    print(f"Document updated successfully: {response}")
+                    self.logger.info(f"File classification updated successfully: {response['result']}")
                 except Exception as e:
-                    print(f"Error updating document: {e}")
+                    self.logger.error(f"Error updating document: {e}")
 
                     # Optional: Verify the update by fetching the document
                 # try:

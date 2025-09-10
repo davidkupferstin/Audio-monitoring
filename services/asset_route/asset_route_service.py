@@ -16,6 +16,7 @@ load_dotenv()
 
 class AssetRouteService:
     def __init__(self):
+        self.logger = Logger.get_logger()
         self.unique_id_generator = UniqueIDGenerator()
         self.retrieving_files = RetrievingFiles()
         self.mongo_uri = os.getenv("MONGO_URI")
@@ -55,24 +56,25 @@ class AssetRouteService:
                     try:
                         self.mongo_persist(db, data)
                         send_messages('podcast_file_to_mongo_id', [id])
+                        self.logger.info("The binary document was successfully written to Mongo.")
                     except Exception as e:
-                        return e
+                        self.logger.error(f"Document not written: {e}")
                     document={"metadata" : metadata}
                     try:
                         response = self.es.index(index=self.es_index, id=id, document=document)
-                        print(f"Document indexed successfully: {response['result']}")
+                        self.logger.info(f"File metadata indexed successfully: {response['result']}")
                     except Exception as e:
-                        print(f"Error indexing document: {e}")
+                        self.logger.error(f"Error indexing document: {e}")
 
-                    # Optional: Verify the document exists (search example)
-                    try:
-                        search_response = self.es.get(index=self.es_index, id=id)
-                        print("\nRetrieved document:")
-                        print(search_response['_source'])
-                    except Exception as e:
-                        print(f"Error retrieving document: {e}")
+                    # # Optional: Verify the document exists (search example)
+                    # try:
+                    #     search_response = self.es.get(index=self.es_index, id=id)
+                    #     print("\nRetrieved document:")
+                    #     print(search_response['_source'])
+                    # except Exception as e:
+                    #     print(f"Error retrieving document: {e}")
 
         except KeyboardInterrupt:
-            print("Shutting down AssetRouteService...")
+            self.logger.error("Shutting down AssetRouteService...")
         finally:
             self.consumer.close()

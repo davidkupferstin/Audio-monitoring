@@ -7,6 +7,7 @@ from shared.kafka.producer import send_messages
 
 class MetaFlowService:
     def __init__(self):
+        self.logger = Logger.get_logger()
         self.extracting_files = ExtractingFiles()
         self.extracting_file_metadata = ExtractingFileMetadata()
 
@@ -20,4 +21,5 @@ class MetaFlowService:
     def run(self):
         for record in self.file_metadata_record():
             send_messages('podcast_file_metadata', [record])
+            self.logger.info("Data extracted and sent successfully")
 

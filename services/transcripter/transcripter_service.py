@@ -21,6 +21,7 @@ COLLECTION_NAME = os.getenv("COLLECTION_NAME")
 class TranscripterService:
     def __init__(self):
         self.transcript = AudioTranscript()
+        self.logger = Logger.get_logger()
         Connection()
         self.es = Connection().es
         self.es_index = os.getenv("ES_INDEX")
@@ -55,6 +56,10 @@ class TranscripterService:
                 for record in self.consumer:
                     id = record.value
                     file = manager.document(record.value)
+                    if file:
+                        self.logger.info("Found single document:")
+                    else:
+                        self.logger.error("Document not found.")
                     print(file)
                     transcript_file = self.transcript.audio_content_to_readable_transcription(file)
                     update_body = {
@@ -64,10 +69,10 @@ class TranscripterService:
                     }
                     try:
                         response = self.es.update(index=self.es_index, id=id, body=update_body)
-                        print(f"Document updated successfully: {response}")
+                        self.logger.info(f"File classification updated successfully: {response['result']}")
                         send_messages('podcast_file_Transcript_to_es', [record.value])
                     except Exception as e:
-                        print(f"Error updating document: {e}")
+                        self.logger.error(f"Error updating document: {e}")
 
                     # # Optional: Verify the update by fetching the document
                     # try:
@@ -77,6 +82,6 @@ class TranscripterService:
                     # except Exception as e:
                     #     print(f"Error fetching updated document: {e}")
         except KeyboardInterrupt:
-            print("Shutting down TranscripterService...")
+            self.logger.error("Shutting down TranscripterService...")
         finally:
             self.consumer.close()
