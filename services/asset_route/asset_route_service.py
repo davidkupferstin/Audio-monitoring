@@ -54,10 +54,23 @@ class AssetRouteService:
                     try:
                         self.mongo_persist(db, data)
                         send_messages('podcast_file_to_mongo_id', [id])
-                    except Exception as a:
-                        return a
-                    response = self.es.index(index=self.es_index, id=id, document=metadata)
-                    # print(response)
+                    except Exception as e:
+                        return e
+                    document={"metadata" : metadata}
+                    try:
+                        response = self.es.index(index=self.es_index, id=id, document=document)
+                        print(f"Document indexed successfully: {response['result']}")
+                    except Exception as e:
+                        print(f"Error indexing document: {e}")
+
+                    # Optional: Verify the document exists (search example)
+                    try:
+                        search_response = self.es.get(index=self.es_index, id=id)
+                        print("\nRetrieved document:")
+                        print(search_response['_source'])
+                    except Exception as e:
+                        print(f"Error retrieving document: {e}")
+
         except KeyboardInterrupt:
             print("Shutting down AssetRouteService...")
         finally:

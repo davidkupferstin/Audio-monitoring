@@ -9,6 +9,6 @@ class MongoDAL:
 
     def fetch_document(self, collection_name , value):
         collection = self.db[collection_name]
-        result = collection.find_one({"unique_id": value})
+        result = collection.find_one({"unique_id": value}, {"file": 1 })
         return result
 
