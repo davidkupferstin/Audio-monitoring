@@ -1,3 +1,4 @@
+from shared.logger.logger import Logger
 from services.meta_flow.extracting_files import ExtractingFiles
 from services.meta_flow.extracting_file_metadata import ExtractingFileMetadata
 from shared.kafka.producer import send_messages

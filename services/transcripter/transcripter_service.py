@@ -1,3 +1,4 @@
+from shared.logger.logger import Logger
 import os
 import time
 from services.transcripter.audio_transcript import AudioTranscript
@@ -52,8 +53,10 @@ class TranscripterService:
                 #         #קובץ נוסף נדחף
                 #     time.sleep(60)
                 for record in self.consumer:
-                    id = manager.document(record.value)
-                    transcript_file = self.transcript.audio_content_to_readable_transcription(id)
+                    id = record.value
+                    file = manager.document(record.value)
+                    print(file)
+                    transcript_file = self.transcript.audio_content_to_readable_transcription(file)
                     update_body = {
                         "doc": {
                             "transcript_file": transcript_file

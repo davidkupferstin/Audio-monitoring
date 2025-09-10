@@ -1,3 +1,4 @@
+from shared.logger.logger import Logger
 import os
 import  json
 from services.asset_route.retrieving_files import RetrievingFiles

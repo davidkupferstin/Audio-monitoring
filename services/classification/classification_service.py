@@ -1,3 +1,4 @@
+from shared.logger.logger import Logger
 import os
 from services.classification.podcast_classification import PodcastClassification
 from shared.elastic.connection import Connection
