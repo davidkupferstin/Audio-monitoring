@@ -57,11 +57,10 @@ class TranscripterService:
                     id = record.value
                     file = manager.document(record.value)
                     if file:
-                        self.logger.info("Found single document:")
+                        self.logger.info(f"{TranscripterService}: Found single document:")
                     else:
-                        self.logger.error("Document not found.")
-                    print(file)
-                    transcript_file = self.transcript.audio_content_to_readable_transcription(file)
+                        self.logger.error(f"{TranscripterService}: Document not found.")
+                    transcript_file = self.transcript.audio_content_to_readable_transcription(file['file'])
                     update_body = {
                         "doc": {
                             "transcript_file": transcript_file
@@ -69,10 +68,10 @@ class TranscripterService:
                     }
                     try:
                         response = self.es.update(index=self.es_index, id=id, body=update_body)
-                        self.logger.info(f"File classification updated successfully: {response['result']}")
+                        self.logger.info(f"{TranscripterService}: File classification updated successfully: {response['result']}")
                         send_messages('podcast_file_Transcript_to_es', [record.value])
                     except Exception as e:
-                        self.logger.error(f"Error updating document: {e}")
+                        self.logger.error(f"{TranscripterService}: Error updating document: {e}")
 
                     # # Optional: Verify the update by fetching the document
                     # try:
@@ -82,6 +81,6 @@ class TranscripterService:
                     # except Exception as e:
                     #     print(f"Error fetching updated document: {e}")
         except KeyboardInterrupt:
-            self.logger.error("Shutting down TranscripterService...")
+            self.logger.error(f"{TranscripterService}: Shutting down TranscripterService...")
         finally:
             self.consumer.close()

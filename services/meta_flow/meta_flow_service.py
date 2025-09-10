@@ -21,5 +21,5 @@ class MetaFlowService:
     def run(self):
         for record in self.file_metadata_record():
             send_messages('podcast_file_metadata', [record])
-            self.logger.info("Data extracted and sent successfully")
+            self.logger.info(f"{MetaFlowService}: Data extracted and sent successfully")
 

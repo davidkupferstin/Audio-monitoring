@@ -56,15 +56,15 @@ class AssetRouteService:
                     try:
                         self.mongo_persist(db, data)
                         send_messages('podcast_file_to_mongo_id', [id])
-                        self.logger.info("The binary document was successfully written to Mongo.")
+                        self.logger.info(f"{AssetRouteService}: The binary document was successfully written to Mongo.")
                     except Exception as e:
-                        self.logger.error(f"Document not written: {e}")
+                        self.logger.error(f"{AssetRouteService}: Document not written: {e}")
                     document={"metadata" : metadata}
                     try:
                         response = self.es.index(index=self.es_index, id=id, document=document)
-                        self.logger.info(f"File metadata indexed successfully: {response['result']}")
+                        self.logger.info(f"{AssetRouteService}: File metadata indexed successfully: {response['result']}")
                     except Exception as e:
-                        self.logger.error(f"Error indexing document: {e}")
+                        self.logger.error(f"{AssetRouteService}: Error indexing document: {e}")
 
                     # # Optional: Verify the document exists (search example)
                     # try:
@@ -75,6 +75,6 @@ class AssetRouteService:
                     #     print(f"Error retrieving document: {e}")
 
         except KeyboardInterrupt:
-            self.logger.error("Shutting down AssetRouteService...")
+            self.logger.error(f"{AssetRouteService}: Shutting down AssetRouteService...")
         finally:
             self.consumer.close()

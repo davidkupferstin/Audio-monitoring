@@ -1,4 +1,72 @@
 services:
+  meta_flow:
+    build:
+      context: .
+      dockerfile: services/meta_flow/Dockerfile
+    image: davidkopershtien/iranian-terror-tweets-hunter-meta_flow:latest
+    depends_on:
+      - kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_SERVERS: kafka:9093
+      FOLDER_PATH: C:\Users\User\data
+
+
+  asset_route:
+    build:
+      context: .
+      dockerfile: services/asset_route/Dockerfile
+    image: davidkopershtien/iranian-terror-tweets-hunter-asset_route:latest
+    depends_on:
+      - kafka
+      - es
+      - mongo
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://mongo:27017/
+      COLLECTION_NAME: podcast_files
+      DB_NAME: Muezzin1DBLocal
+      KAFKA_SERVERS: kafka:9093
+      ELASTIC_URI: es:9200
+      ES_INDEX: podcast_file_metadata
+
+
+  transcripter:
+    build:
+      context: .
+      dockerfile: services/transcripter/Dockerfile
+    image: davidkopershtien/iranian-terror-tweets-hunter-transcripter:latest
+    depends_on:
+      - kafka
+      - mongo
+      - es
+    restart: unless-stopped
+    environment:
+      LIST_HOSTILE: "R2Vub2NpZGUsV2FyIENyaW1lcyxBcGFydGhlaWQsTWFzc2FjcmUsTmFrYmEsRGlzcGxhY2VtZW50LEh1bWFuaXRhcmlhbiBDcmlzaXMsQmxvY2thZGUsT2NjdXBhdGlvbixSZWZ1Z2VlcyxJQ0MsQkRT"
+      LIST_LESS_HOSTILE: "RnJlZWRvbSBGbG90aWxsYSxSZXNpc3RhbmNlLExpYmVyYXRpb24sRnJlZSBQYWxlc3RpbmUsR2F6YSxDZWFzZWZpcmUsUHJvdGVzdCxVTlJXQQ=="
+      MONGO_URI: mongodb://mongo:27017/
+      COLLECTION_NAME: podcast_files
+      DB_NAME: Muezzin1DBLocal
+      KAFKA_SERVERS: kafka:9093
+      ELASTIC_URI: es:9200
+      ES_INDEX: podcast_file_metadata
+
+
+  classification:
+    build:
+      context: .
+      dockerfile: services/classification/Dockerfile
+    image: davidkopershtien/iranian-terror-tweets-hunter-classification:latest
+    depends_on:
+      - kafka
+      - es
+    restart: unless-stopped
+    environment:
+      KAFKA_SERVERS: kafka:9093
+      ELASTIC_URI: es:9200
+      ES_INDEX: podcast_file_metadata
+
+
 
   kafka:
     image: apache/kafka
@@ -28,3 +96,12 @@ services:
     ports:
       - "27017:27017"
     restart: unless-stopped
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+
+    ports:
+      - "9200:9200"
+    restart: unless-stopped
+    environment:
+      ES_JAVA_OPTS: Xms1g -Xmx1g

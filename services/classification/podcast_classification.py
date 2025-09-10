@@ -61,6 +61,7 @@ class PodcastClassification:
 
         podcast_severity = self.podcast_severity_rating_by_three_boundaries(danger_perce)
 
+        print(type(danger_perce), type(criminal_podcast), type(podcast_severity))
         classi_string = {"classification" : {
             "danger_perce" : f"{danger_perce} %",
             "criminal_podcast" : criminal_podcast,
